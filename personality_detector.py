@@ -10,6 +10,9 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import random
 from PIL import Image, ImageTk
+import tkinter as tk
+from tkinter import ttk
+import random
 # Google collab link : https://colab.research.google.com/drive/1vG5VU261K6UBBDIU11dOXu63M9L1bbkQ?usp=sharing
 # Github Repo : https://github.com/NathanRael/Personality_detector
 
@@ -58,7 +61,14 @@ class PersonalityDetector:
     @staticmethod
     def _predict(model, data_test):
         predictions = model.predict(data_test)
-        return np.where(predictions > 0.5, "Extrovert", "Introvert").flatten().tolist()
+
+        results = []
+        for prob in predictions:
+            percentage = float(prob[0]) * 100
+            label = "Extrovert" if prob[0] > 0.5 else "Introvert"
+            results.append(f"{label} ({percentage:.2f}%)")
+
+        return results
 
     def _train_model(self,df):
         X = df[df.columns[:-1]].values
@@ -109,135 +119,124 @@ def test_data():
     for i, data in enumerate(predictions):
         print(f"Data {test_data[i]} => prediction :  {data}")
 
-
-
-
-def personality_detector_cli():
-    print("Welcome to the Personality Detector!\n\n")
-    lang = input("Choose a language (fr, eng): ").strip().lower()
-    if lang not in ["fr", "eng"]:
-        print("Invalid language. Defaulting to English.")
-        lang = "eng"
-
-    questions = [
-        {
-            "key": "Time_spent_Alone",
-            "question": {
-                "eng": "How many hours do you spend alone daily (0–11)?",
-                "fr": "Combien d'heures passez-vous seul par jour (0–11) ?"
-            },
-            "range": (0, 11)
-        },
-        {
-            "key": "Stage_fear",
-            "question": {
-                "eng": "Do you experience stage fright? (1 for YES, 0 for NO)",
-                "fr": "Avez-vous le trac sur scène ? (1 pour OUI, 0 pour NON)"
-            },
-            "range": (0, 1)
-        },
-        {
-            "key": "Social_event_attendance",
-            "question": {
-                "eng": "How often do you attend social events (0–10)?",
-                "fr": "À quelle fréquence participez-vous à des événements sociaux (0–10) ?"
-            },
-            "range": (0, 10)
-        },
-        {
-            "key": "Going_outside",
-            "question": {
-                "eng": "How often do you go outside per week (0–7)?",
-                "fr": "À quelle fréquence sortez-vous par semaine (0–7) ?"
-            },
-            "range": (0, 7)
-        },
-        {
-            "key": "Drained_after_socializing",
-            "question": {
-                "eng": "Do you feel drained after socializing? (1 for YES, 0 for NO)",
-                "fr": "Vous sentez-vous épuisé après avoir socialisé ? (1 pour OUI, 0 pour NON)"
-            },
-            "range": (0, 1)
-        },
-        {
-            "key": "Friends_circle_size",
-            "question": {
-                "eng": "How many close friends do you have (0–15)?",
-                "fr": "Combien d'amis proches avez-vous (0–15) ?"
-            },
-            "range": (0, 15)
-        },
-        {
-            "key": "Post_frequency",
-            "question": {
-                "eng": "How often do you post on social media (0–10)?",
-                "fr": "À quelle fréquence publiez-vous sur les réseaux sociaux (0–10) ?"
-            },
-            "range": (0, 10)
-        }
-    ]
-
-    retrievedData = {
-        "Time_spent_Alone": None,
-        "Stage_fear": None,
-        "Social_event_attendance": None,
-        "Going_outside": None,
-        "Drained_after_socializing": None,
-        "Friends_circle_size": None,
-        "Post_frequency": None
-    }
-
-    conversation_history = ""
-
-    while not all(value is not None for value in retrievedData.values()):
+class PersonalityDetectorGUI:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("🧠 Détecteur de Personnalité")
+        self.root.geometry("1200x800")
+        self.root.configure(bg='#0f172a')
         
-        unfilled_keys = [q for q in questions if retrievedData[q["key"]] is None]
-        if not unfilled_keys:
-            break
-        question_data = random.choice(unfilled_keys)
-        key = question_data["key"]
-        question = question_data["question"][lang]
-        valid_range = question_data["range"]
-
-        print("BOT:", question)
-        userMessage = input("You: ")
-
-        try:
-            # Validate user input
-            value = userMessage.strip()
-            if value.lower() in ["none", ""]:
-                print("BOT: Please provide a valid number.")
-                continue
-
-            value = int(value)  # Convert to integer
-            if not (valid_range[0] <= value <= valid_range[1]):
-                print(f"BOT: Please enter a number between {valid_range[0]} and {valid_range[1]}.")
-                continue
-
-            # Update retrieved data
-            retrievedData[key] = value
-            conversation_history += f"User: {userMessage}\nBOT: {question}\n"
-
-        except ValueError:
-            print("BOT: Invalid input. Please enter a valid number.")
-            continue
-
-    personalityDetector = PersonalityDetector()
-    prediction = personalityDetector.predict(np.array([list(retrievedData.values())]))
-    prefix = "D'après cette conversation, vous êtes un/une" if lang == "fr" else "Based on the conversation, you are an"
-    result = prediction[0].capitalize()
-    print("\n" + "=" * 50)
-    print(f"{prefix.center(50)}")
-    print(f"{('🔹 ' + result + ' 🔹').center(50)}")
-    print("=" * 50 + "\n")
-
-    return retrievedData
-
-
+        self.questions = [
+            ("🕒", "Heures passées seul par jour (0-11)?", 0, 11),
+            ("🎭", "Avez-vous le trac sur scène?", 0, 1, True),
+            ("🎉", "Fréquence des événements sociaux (0-10)?", 0, 10),
+            ("🚶", "Sorties par semaine (0-7)?", 0, 7),
+            ("😴", "Vous sentez-vous épuisé après socialiser?", 0, 1, True),
+            ("👥", "Nombre d'amis proches (0-15)?", 0, 15),
+            ("📱", "Publications sur réseaux sociaux (0-10)?", 0, 10)
+        ]
+        
+        self.answers = []
+        self.current_q = 0
+        
+        self.create_ui()
+        self.show_question()
+    
+    def create_ui(self):
+        self.main_frame = tk.Frame(self.root, bg='#1a1a2e')
+        self.main_frame.pack(fill='both', expand=True, padx=40, pady=40)
+        
+        self.title = tk.Label(self.main_frame, text="✨ Détecteur de Personnalité ✨", 
+                             font=('Segoe UI', 28, 'bold'), bg='#1a1a2e', fg='#00d4ff')
+        self.title.pack(pady=30)
+        
+        self.question_frame = tk.Frame(self.main_frame, bg='#16213e', relief='flat', bd=0)
+        self.question_frame.pack(fill='both', expand=True, pady=30)
+    
+    def show_question(self):
+        for widget in self.question_frame.winfo_children():
+            widget.destroy()
+        
+        if self.current_q >= len(self.questions):
+            self.show_result()
+            return
+        
+        q = self.questions[self.current_q]
+        icon, text, min_val, max_val = q[0], q[1], q[2], q[3]
+        is_boolean = len(q) > 4
+        
+        progress = tk.Label(self.question_frame, 
+                           text=f"Question {self.current_q + 1} sur {len(self.questions)} 🎯",
+                           font=('Segoe UI', 14, 'italic'), bg='#16213e', fg='#8892b0')
+        progress.pack(pady=15)
+        
+        question_label = tk.Label(self.question_frame, text=f"{icon}\n{text}",
+                                 font=('Segoe UI', 18, 'bold'), bg='#16213e', fg='#ccd6f6')
+        question_label.pack(pady=40)
+        
+        if is_boolean:
+            btn_frame = tk.Frame(self.question_frame, bg='#16213e')
+            btn_frame.pack(pady=30)
+            
+            yes_btn = tk.Button(btn_frame, text="✨ OUI", font=('Segoe UI', 16, 'bold'),
+                               bg='#64ffda', fg='#0a192f', padx=40, pady=15, relief='flat', bd=0,
+                               command=lambda: self.answer(1))
+            yes_btn.pack(side='left', padx=20)
+            
+            no_btn = tk.Button(btn_frame, text="❌ NON", font=('Segoe UI', 16, 'bold'),
+                              bg='#ff6b9d', fg='white', padx=40, pady=15, relief='flat', bd=0,
+                              command=lambda: self.answer(0))
+            no_btn.pack(side='left', padx=20)
+        else:
+            self.scale_var = tk.IntVar(value=min_val)
+            scale = tk.Scale(self.question_frame, from_=min_val, to=max_val,
+                           orient='horizontal', length=300, font=('Segoe UI', 14, 'bold'),
+                           bg='#233554', fg='#64ffda', troughcolor='#0f172a', variable=self.scale_var)
+            scale.pack(pady=25)
+            
+            next_btn = tk.Button(self.question_frame, text="Suivant ➤",
+                               font=('Segoe UI', 16, 'bold'), bg='#00d4ff', fg='#0a192f',
+                               padx=50, pady=15, relief='flat', bd=0, command=lambda: self.answer(self.scale_var.get()))
+            next_btn.pack(pady=25)
+    
+    def answer(self, value):
+        self.answers.append(value)
+        self.current_q += 1
+        self.show_question()
+    
+    def show_result(self):
+        for widget in self.question_frame.winfo_children():
+            widget.destroy()
+        
+        model = PersonalityDetector()
+        personality = model.predict(np.array([self.answers]))[0]
+        print(f"Personality prediction: {personality}")
+        color = "#ff6b9d" if "Extrovert" in personality else "#64ffda"
+        
+        result_label = tk.Label(self.question_frame, 
+                               text=f"🎊 Vous êtes 🎊\n\n💫 {personality} 💫",
+                               font=('Segoe UI', 24, 'bold'), bg='#16213e', fg=color)
+        result_label.pack(pady=50)
+        
+        restart_btn = tk.Button(self.question_frame, text="🚀 Recommencer",
+                               font=('Segoe UI', 16, 'bold'), bg='#a855f7', fg='white',
+                               padx=40, pady=18, relief='flat', bd=0, command=self.restart)
+        restart_btn.pack(pady=30)
+    
+    def restart(self):
+        self.answers = []
+        self.current_q = 0
+        self.show_question()
+    
+    def run(self):
+        self.root.mainloop()
 
 if __name__ == "__main__":
-    personality_detector_cli()
+    def run_gui():
+        app = PersonalityDetectorGUI()
+        app.run()
+    run_gui()
+    # personality_detector_cli()
+    
     # train_model()
     # test_data()
-   
