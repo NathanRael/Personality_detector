@@ -105,6 +105,7 @@ def test_data():
 
 
 def conversational_prediction():
+    print("Welcome to the Personality Detector!\n\n")
     lang = input("Choose a language (fr, eng): ").strip().lower()
     if lang not in ["fr", "eng"]:
         print("Invalid language. Defaulting to English.")
