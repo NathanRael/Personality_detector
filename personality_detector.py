@@ -1,10 +1,17 @@
+# RALAIVOAVY Natanael - 035I23 - DA2I L3
+
 import pandas as pd
 import numpy as np
+import tkinter as tk
+from tkinter import ttk, messagebox
+import base64
+import io
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import random
-
+from PIL import Image, ImageTk
 # Google collab link : https://colab.research.google.com/drive/1vG5VU261K6UBBDIU11dOXu63M9L1bbkQ?usp=sharing
+# Github Repo : https://github.com/NathanRael/Personality_detector
 
 
 class PersonalityDetector:
@@ -104,7 +111,8 @@ def test_data():
 
 
 
-def conversational_prediction():
+
+def personality_detector_cli():
     print("Welcome to the Personality Detector!\n\n")
     lang = input("Choose a language (fr, eng): ").strip().lower()
     if lang not in ["fr", "eng"]:
@@ -228,8 +236,8 @@ def conversational_prediction():
 
 
 
-
 if __name__ == "__main__":
+    personality_detector_cli()
     # train_model()
     # test_data()
-    conversational_prediction()
+   
