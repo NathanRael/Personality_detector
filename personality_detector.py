@@ -64,9 +64,15 @@ class PersonalityDetector:
 
         results = []
         for prob in predictions:
-            percentage = float(prob[0]) * 100
-            label = "Extrovert" if prob[0] > 0.5 else "Introvert"
-            results.append(f"{label} ({percentage:.2f}%)")
+            p = float(prob[0])
+            if p > 0.5:
+                label = "Extrovert"
+                confidence = p * 100
+            else:
+                label = "Introvert"
+                confidence = (1 - p) * 100
+
+            results.append(f"{label} ({confidence:.2f}%)")
 
         return results
 
@@ -236,6 +242,9 @@ if __name__ == "__main__":
         app = PersonalityDetectorGUI()
         app.run()
     run_gui()
+
+    test = PersonalityDetector()
+    
     # personality_detector_cli()
     
     # train_model()
