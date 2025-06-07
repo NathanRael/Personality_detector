@@ -122,7 +122,7 @@ def test_data():
     test_data = [
         [10, 1, 3, 3, 1, 5, 3],  # Should be Introvert
         [4.505816, 0.0, 3.96335447, 5, 0, 14, 5],  # Should be Extrovert
-        [5,1, 0, 0,1,0,2], # Introvert
+        [5,1, 0, 0,1,0,2], # Introvert  
         [10,1,2,2,1,2,1] # Introvert
     ]
     
@@ -250,11 +250,11 @@ if __name__ == "__main__":
     def run_gui():
         app = PersonalityDetectorGUI()
         app.run()
-    # run_gui()
+    run_gui()
 
     # test = PersonalityDetector()
     
     # personality_detector_cli()
     
-    train_model()
+    # train_model()
     # test_data()
