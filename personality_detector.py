@@ -97,6 +97,15 @@ class PersonalityDetector:
         model.fit(X_train, y_train, batch_size=16, epochs=20, validation_data=(X_test, y_test))
         model.save("personality_detector_model.h5")
 
+
+        train_loss, train_accuracy = model.evaluate(X_train, y_train)
+        test_loss, test_accuracy = model.evaluate(X_test, y_test)
+
+
+        print(f"Training Accuracy: {train_accuracy * 100:.2f}%")
+        print(f"Testing Accuracy: {test_accuracy * 100:.2f}%")
+
+
         print("--After training--")
         print(self._predict(model=model,data_test=X_test[:5]))
         return model
@@ -241,11 +250,11 @@ if __name__ == "__main__":
     def run_gui():
         app = PersonalityDetectorGUI()
         app.run()
-    run_gui()
+    # run_gui()
 
-    test = PersonalityDetector()
+    # test = PersonalityDetector()
     
     # personality_detector_cli()
     
-    # train_model()
+    train_model()
     # test_data()
